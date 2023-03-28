@@ -4,41 +4,33 @@ Description: >
 Parameters:
   Stage:
     Type: String
-    Default: local
+    Default: cloud
     AllowedValues:
-      - local
-      - dev
-      - stg
-      - prod
+      - cloud
+      # - dev
+      # - stg
+      # - prod
+
+Conditions:
+  IsCloud: !Equals [!Ref Stage, "cloud"]
 
 Mappings:
   DynamoDB:
     BmonsterScheduleTable:
-      local: bmonster-schedule-table-local
-      dev: bmonster-schedule-table-dev
-      stg: bmonster-schedule-table-stg
-      prod: bmonster-schedule-table-prod
+      cloud: bmonster-schedule-table-cloud
     BmonsterSchedulePerformerGSI:
-      local: bmonster-schedule-performer-gsi-local
-      dev: bmonster-schedule-performer-gsi-dev
-      stg: bmonster-schedule-performer-gsi-stg
-      prod: bmonster-schedule-performer-gsi-prod
+      cloud: bmonster-schedule-performer-gsi-cloud
     BmonsterProgramTable:
-      local: bmonster-program-table-local
-      dev: bmonster-program-table-dev
-      stg: bmonster-program-table-stg
-      prod: bmonster-program-table-prod
+      cloud: bmonster-program-table-cloud
     BmonsterReviewTable:
-      local: bmonster-review-table-local
-      dev: bmonster-review-table-dev
-      stg: bmonster-review-table-stg
-      prod: bmonster-review-table-prod
+      cloud: bmonster-review-table-cloud
 
 Resources:
   BmonsterEcrRepository:
     Type: AWS::ECR::Repository
+    Condition: IsCloud
     Properties:
-      RepositoryName: !Sub python-sam-app-bmonster
+      RepositoryName: python-sam-app-bmonster
 
   BmonsterScheduleDynamoDBTable:
     Type: AWS::DynamoDB::Table
