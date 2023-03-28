@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+
+Parameters:
+  Stage:
+    Type: String
+    Default: local
+    AllowedValues:
+      - local
+      - dev
+      - stg
+      - prod
+
+Mappings:
+  DynamoDB:
+    BmonsterScheduleTable:
+      local: bmonster-schedule-table-local
+      dev: bmonster-schedule-table-dev
+      stg: bmonster-schedule-table-stg
+      prod: bmonster-schedule-table-prod
+    BmonsterSchedulePerformerGSI:
+      local: bmonster-schedule-performer-gsi-local
+      dev: bmonster-schedule-performer-gsi-dev
+      stg: bmonster-schedule-performer-gsi-stg
+      prod: bmonster-schedule-performer-gsi-prod
+    BmonsterProgramTable:
+      local: bmonster-program-table-local
+      dev: bmonster-program-table-dev
+      stg: bmonster-program-table-stg
+      prod: bmonster-program-table-prod
+    BmonsterReviewTable:
+      local: bmonster-review-table-local
+      dev: bmonster-review-table-dev
+      stg: bmonster-review-table-stg
+      prod: bmonster-review-table-prod
+
+Resources:
+  BmonsterEcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub python-sam-app-bmonster
+
+  BmonsterScheduleDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "studio"
+          AttributeType: "S"
+        - AttributeName: "start_at"
+          AttributeType: "S"
+        - AttributeName: "performer"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "studio"
+          KeyType: "HASH"
+        - AttributeName: "start_at"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+      TableName: !FindInMap [DynamoDB, BmonsterScheduleTable, !Ref Stage]
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
+      GlobalSecondaryIndexes:
+        - IndexName: !FindInMap [DynamoDB, "BmonsterSchedulePerformerGSI", !Ref Stage]
+          KeySchema:
+            - AttributeName: "performer"
+              KeyType: "HASH"
+            - AttributeName: "start_at"
+              KeyType: "RANGE"
+          Projection:
+            NonKeyAttributes:
+              - "ttl"
+            ProjectionType: "INCLUDE"
+
+  BmonsterProgramDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "performer"
+          AttributeType: "S"
+        - AttributeName: "program"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "performer"
+          KeyType: "HASH"
+        - AttributeName: "program"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+      TableName: !FindInMap [DynamoDB, BmonsterProgramTable, !Ref Stage]
+
+  BmonsterReviewDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "username"
+          AttributeType: "S"
+        - AttributeName: "performer_program"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "username"
+          KeyType: "HASH"
+        - AttributeName: "performer_program"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+      TableName: !FindInMap [DynamoDB, BmonsterReviewTable, !Ref Stage]
