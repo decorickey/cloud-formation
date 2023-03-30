@@ -12,4 +12,4 @@ services:
 
 networks:
   default:
-    name: dynamodb-local-network
+    name: cloud-formation-local-network
