@@ -12,4 +12,5 @@ services:
 
 networks:
   default:
-    name: cloud-formation-local-network
+    name: cloudformation-local-network
+
