@@ -8,6 +8,6 @@ if [ -z "${STAGE}" ]; then
 fi
 
 aws cloudformation create-stack \
-  --stack-name bmonster-infra-$STAGE \
-  --template-body file://template-bmonster.yaml \
+  --stack-name bmonster-resources-$STAGE \
+  --template-body file://template.yaml \
   --parameters ParameterKey=Stage,ParameterValue=$STAGE

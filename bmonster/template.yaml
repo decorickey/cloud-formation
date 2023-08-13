@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+
+Parameters:
+  Stage:
+    Type: String
+    Default: cloud
+    AllowedValues:
+      - cloud
+
+Resources:
+  PerformerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "N"
+        - AttributeName: "name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      TableName: !Sub bmonster-performer-table-${Stage}
+      GlobalSecondaryIndexes:
+        - IndexName: !Sub bmonster-performer-name-gsi-${Stage}
+          KeySchema:
+            - AttributeName: "name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+
+  ScheduleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "studio"
+          AttributeType: "S"
+        - AttributeName: "start_at"
+          AttributeType: "S"
+        - AttributeName: "performer_name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "studio"
+          KeyType: "HASH"
+        - AttributeName: "start_at"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+      TableName: !Sub bmonster-schedule-table-${Stage}
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
+      GlobalSecondaryIndexes:
+        - IndexName: !Sub bmonster-schedule-performer-gsi-${Stage}
+          KeySchema:
+            - AttributeName: "performer_name"
+              KeyType: "HASH"
+            - AttributeName: "start_at"
+              KeyType: "RANGE"
+          Projection:
+            NonKeyAttributes:
+              - "ttl"
+            ProjectionType: "INCLUDE"
